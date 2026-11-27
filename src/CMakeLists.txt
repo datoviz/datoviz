@@ -153,6 +153,19 @@ elseif(CC_CLANG)
         -Wno-unguarded-availability-new
     )
 elseif(CC_MSVC)
+    include(CheckCSourceCompiles)
+    set(_dvz_saved_required_flags "${CMAKE_REQUIRED_FLAGS}")
+    string(APPEND CMAKE_REQUIRED_FLAGS " /std:c11 /experimental:c11atomics")
+    check_c_source_compiles(
+        "#include <stdatomic.h>
+int main(void) { atomic_int value = 0; return atomic_fetch_add(&value, 1); }"
+        DVZ_MSVC_HAS_C11_ATOMICS)
+    set(CMAKE_REQUIRED_FLAGS "${_dvz_saved_required_flags}")
+    if(NOT DVZ_MSVC_HAS_C11_ATOMICS)
+        message(FATAL_ERROR
+            "MSVC C11 atomics are required. Install a recent Visual Studio 2022 C++ toolset "
+            "supporting /std:c11 and /experimental:c11atomics.")
+    endif()
     list(APPEND DVZ_COMPILE_OPTIONS_C /std:c11 /experimental:c11atomics)
     list(APPEND DVZ_COMPILE_OPTIONS_CXX /std:c++17)
 endif()

@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "frame_plan/frame_plan.h"
 #include "frame_plan/emit.h"
@@ -247,28 +248,37 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     ANN(emitter);
     ANN(plan);
 
-    DvzFramePlanEmitter candidate = {0};
-    if (!_emitter_state_clone(emitter, &candidate))
+    DvzFramePlanEmitter* candidate = (DvzFramePlanEmitter*)dvz_calloc(1, sizeof(*candidate));
+    if (candidate == NULL)
+    {
+        _diagnostic(report, "failed to allocate runtime emitter candidate");
+        return NULL;
+    }
+    if (!_emitter_state_clone(emitter, candidate))
     {
         _diagnostic(report, "failed to clone runtime emitter state");
+        dvz_free(candidate);
         return NULL;
     }
 
     DvzDrp2CommandStream* stream =
-        _frame_plan_emitter_emit_drp2_candidate(&candidate, plan, caps, report, cfg);
+        _frame_plan_emitter_emit_drp2_candidate(candidate, plan, caps, report, cfg);
     if (stream == NULL)
     {
-        _emitter_state_discard(&candidate);
+        _emitter_state_discard(candidate);
+        dvz_free(candidate);
         return NULL;
     }
 
     if (!_scene_freeze_stream_payloads(stream))
     {
         dvz_drp2_stream_destroy(stream);
-        _emitter_state_discard(&candidate);
+        _emitter_state_discard(candidate);
+        dvz_free(candidate);
         return NULL;
     }
 
-    _emitter_state_commit(emitter, &candidate);
+    _emitter_state_commit(emitter, candidate);
+    dvz_free(candidate);
     return stream;
 }

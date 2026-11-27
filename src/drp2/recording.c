@@ -3212,12 +3212,14 @@ DvzDrp2Recording* dvz_drp2_recording_open(const char* path)
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     DvzDrp2RecordingOwner* owner =
         (DvzDrp2RecordingOwner*)dvz_calloc(1, sizeof(DvzDrp2RecordingOwner));
-    if (recording == NULL || stream == NULL || owner == NULL)
+    char* line = (char*)dvz_calloc(DVZ_DRP2_RECORDING_LINE_SIZE, 1);
+    if (recording == NULL || stream == NULL || owner == NULL || line == NULL)
     {
         fclose(fp);
         dvz_drp2_stream_destroy(stream);
         dvz_free(owner);
         dvz_free(recording);
+        dvz_free(line);
         return NULL;
     }
     recording->stream = stream;
@@ -3225,8 +3227,7 @@ DvzDrp2Recording* dvz_drp2_recording_open(const char* path)
     stream->owner_release = _recording_owner_release;
 
     bool ok = true;
-    char line[DVZ_DRP2_RECORDING_LINE_SIZE] = {0};
-    while (fgets(line, sizeof(line), fp) != NULL)
+    while (fgets(line, DVZ_DRP2_RECORDING_LINE_SIZE, fp) != NULL)
     {
         if (strstr(line, "\"type\":\"command\"") != NULL)
         {
@@ -3240,6 +3241,7 @@ DvzDrp2Recording* dvz_drp2_recording_open(const char* path)
         }
     }
     fclose(fp);
+    dvz_free(line);
     if (!ok)
     {
         dvz_drp2_recording_close(recording);

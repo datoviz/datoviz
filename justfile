@@ -8,6 +8,8 @@ TEMPLATES_DIR := "templates"
 
 # Use a non-system shell so macOS keeps DYLD_* variables from direnv/.envrc.
 set shell := ["bash", "-cu"]
+# Git Bash startup scripts require unset variables to be allowed during shell initialization.
+set windows-shell := ["bash", "-c"]
 
 
 

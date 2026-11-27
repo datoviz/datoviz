@@ -26,6 +26,7 @@ jobs:
         -DDVZ_SHADERC_RUNTIME_LIBRARY=libshaderc.so.1
         -DDVZ_VALIDATE_SPIRV=ON
         -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON
+        -DDVZ_STACK_USAGE=ON
     steps:
       - uses: actions/checkout@v7
         with:
@@ -62,11 +63,19 @@ jobs:
           just doc-languages-browser-check --site-dir build/docs-site-check
       - name: Build
         run: just build
+      - name: Check production stack frames
+        run: |
+          cmake --build build --target datoviz_text_atlas_generate
+          python tools/check_stack_usage.py --compile-commands build/compile_commands.json --check
       - name: Check present paths
         run: >-
           xvfb-run --auto-servernum
           --server-args="-screen 0 1024x768x24 -extension MIT-SHM"
           just present-check --frames 30
+      - name: Install Emscripten for tooling tests
+        uses: emscripten-core/setup-emsdk@v16
+        with:
+          version: '4.0.17'
       - name: Test Python tooling
         run: |
           PYTHON=python just ctypes-check
@@ -105,6 +114,7 @@ jobs:
             vulkan-validationlayers freetype tinyxml2
           command -v glslc
           command -v spirv-val
+          python -m pip install PyYAML
       - name: Build
         run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
       - name: Test
@@ -184,20 +194,20 @@ jobs:
             Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           & $validator.FullName --version
           & $glslc.FullName --version
-      - name: Build
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - uses: extractions/setup-just@v4
+      - name: Python build prerequisites
+        run: python -m pip install PyYAML numpy
+      - name: Build through the documented Windows route
         shell: pwsh
         run: |
-          cmake -S . -B build -GNinja `
-            -DCMAKE_BUILD_TYPE=Debug `
-            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-            -DVCPKG_TARGET_TRIPLET=x64-windows `
-            -DVCPKG_INSTALLED_DIR="$PWD/build/vcpkg_installed" `
-            -DDVZ_ENABLE_SHADERC=ON `
-            -DDVZ_BUILD_EXAMPLES=OFF `
-            -DDVZ_GLSLC_EXECUTABLE="$env:DVZ_GLSLC" `
-            -DDVZ_SPIRV_VAL_EXECUTABLE="$env:DVZ_SPIRV_VAL" `
-            -DDVZ_VALIDATE_SPIRV=ON `
-            -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON
+          $env:DVZ_CMAKE_ARGS = "-DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_EXAMPLES=OFF -DDVZ_GLSLC_EXECUTABLE=$env:DVZ_GLSLC -DDVZ_SPIRV_VAL_EXECUTABLE=$env:DVZ_SPIRV_VAL -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
+          just build
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cmake --build build
+      - name: Test scene stack regressions
+        shell: pwsh
+        run: |
+          just test planning
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

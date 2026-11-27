@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_technique.h"
@@ -1773,63 +1774,61 @@ static bool _composition_resolve_product_chain(
  *
  * @param render_plan the classified panel render facts
  * @param caps the active capability snapshot
- * @param out output snapshot, unchanged on failure
+ * @param draft zero-initialized mutable workspace
  * @param report optional diagnostic report
  * @return whether composition succeeded
  */
-bool _scene_panel_composition_resolve(
+static bool _scene_panel_composition_resolve_draft(
     const DvzPanelRenderPlan* render_plan, const DvzCapabilitySnapshot* caps,
-    DvzPanelCompositionSnapshot* out, DvzDiagnosticReport* report)
+    DvzPanelCompositionSnapshot* draft, DvzDiagnosticReport* report)
 {
     ANN(render_plan);
-    ANN(out);
-    DvzPanelCompositionSnapshot draft = {0};
-    dvz_snprintf(draft.panel_id, sizeof(draft.panel_id), "%s", render_plan->panel_id);
-    draft.origin_x = render_plan->origin_x;
-    draft.origin_y = render_plan->origin_y;
-    draft.width = render_plan->width;
-    draft.height = render_plan->height;
-    draft.render_scale = render_plan->render_scale > 0 ? render_plan->render_scale : 1.0f;
+    ANN(draft);
+    dvz_snprintf(draft->panel_id, sizeof(draft->panel_id), "%s", render_plan->panel_id);
+    draft->origin_x = render_plan->origin_x;
+    draft->origin_y = render_plan->origin_y;
+    draft->width = render_plan->width;
+    draft->height = render_plan->height;
+    draft->render_scale = render_plan->render_scale > 0 ? render_plan->render_scale : 1.0f;
     dvz_memcpy(
-        draft.local_to_target, sizeof(draft.local_to_target), render_plan->local_to_target,
+        draft->local_to_target, sizeof(draft->local_to_target), render_plan->local_to_target,
         sizeof(render_plan->local_to_target));
-    if (draft.local_to_target[0] == 0.0f && draft.local_to_target[1] == 0.0f)
+    if (draft->local_to_target[0] == 0.0f && draft->local_to_target[1] == 0.0f)
     {
-        draft.local_to_target[0] = 1.0f;
-        draft.local_to_target[1] = 1.0f;
-        draft.local_to_target[2] = (float)draft.origin_x;
-        draft.local_to_target[3] = (float)draft.origin_y;
+        draft->local_to_target[0] = 1.0f;
+        draft->local_to_target[1] = 1.0f;
+        draft->local_to_target[2] = (float)draft->origin_x;
+        draft->local_to_target[3] = (float)draft->origin_y;
     }
     if (caps != NULL)
-        draft.capabilities = *caps;
-    draft.available_capability_mask = _composition_available_capabilities(caps);
+        draft->capabilities = *caps;
+    draft->available_capability_mask = _composition_available_capabilities(caps);
 
-    if (draft.width == 0 || draft.height == 0)
+    if (draft->width == 0 || draft->height == 0)
     {
-        draft.width = 0;
-        draft.height = 0;
-        draft.requested_sample_count = 1;
-        draft.effective_sample_count = 1;
-        draft.valid = true;
-        draft.work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(&draft);
-        if (!_frame_plan_composition_validate(&draft, report))
+        draft->width = 0;
+        draft->height = 0;
+        draft->requested_sample_count = 1;
+        draft->effective_sample_count = 1;
+        draft->valid = true;
+        draft->work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(draft);
+        if (!_frame_plan_composition_validate(draft, report))
             return false;
-        *out = draft;
         return true;
     }
 
     if (!_composition_validate_visuals(render_plan, report))
         return false;
     bool msaa_reduced = false;
-    draft.requested_sample_count =
+    draft->requested_sample_count =
         render_plan->msaa_state != NULL && render_plan->msaa_state->enabled
             ? render_plan->msaa_state->sample_count
             : 1;
-    draft.effective_sample_count =
+    draft->effective_sample_count =
         _composition_effective_sample_count(render_plan, caps, &msaa_reduced);
-    draft.alpha_to_coverage = render_plan->msaa_state != NULL &&
-                              render_plan->msaa_state->alpha_to_coverage &&
-                              draft.effective_sample_count > 1;
+    draft->alpha_to_coverage = render_plan->msaa_state != NULL &&
+                               render_plan->msaa_state->alpha_to_coverage &&
+                               draft->effective_sample_count > 1;
     uint32_t msaa_adaptation = msaa_reduced ? COMPOSITION_ADAPT_MSAA_REDUCED : 0;
 
     const uint64_t scene_color = _composition_product_bit(DVZ_RENDER_PRODUCT_SCENE_COLOR);
@@ -1845,10 +1844,10 @@ bool _scene_panel_composition_resolve(
     const bool effective_gtao = render_plan->ao_enabled && render_plan->gbuffer_visual_count > 0;
     const bool effective_edl = render_plan->edl_enabled && render_plan->edl_has_depth_producer;
     if (render_plan->ao_enabled && !effective_gtao)
-        draft.disabled_optional_technique_mask |=
+        draft->disabled_optional_technique_mask |=
             1u << (uint32_t)DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY;
     if (render_plan->edl_enabled && !effective_edl)
-        draft.disabled_optional_technique_mask |= 1u << (uint32_t)DVZ_SCENE_TECHNIQUE_EDL;
+        draft->disabled_optional_technique_mask |= 1u << (uint32_t)DVZ_SCENE_TECHNIQUE_EDL;
     const bool needs_surface_record = render_plan->gbuffer_enabled || effective_gtao;
 
     uint32_t begin = UINT32_MAX;
@@ -1859,12 +1858,12 @@ bool _scene_panel_composition_resolve(
             return _composition_report(
                 report, "panel %s scene occlusion has no product producer", render_plan->panel_id);
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_SCENE_OCCLUSION, 0, scene_occlusion, 0,
+                draft, DVZ_SCENE_TECHNIQUE_SCENE_OCCLUSION, 0, scene_occlusion, 0,
                 DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
             !_composition_authored_bounds(
                 render_plan->scene_occlusion, render_plan->scene_occlusion_count,
                 DVZ_PANEL_RENDER_INVALID_INDEX, &begin, &end) ||
-            !_composition_set_latest_expansion(&draft, begin, end, 0))
+            !_composition_set_latest_expansion(draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s scene occlusion expansion failed", render_plan->panel_id);
     }
@@ -1876,9 +1875,9 @@ bool _scene_panel_composition_resolve(
                 report, "panel %s volume occlusion has no product producer",
                 render_plan->panel_id);
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_VOLUME_OCCLUSION, 0, volume_first_hit, 0,
+                draft, DVZ_SCENE_TECHNIQUE_VOLUME_OCCLUSION, 0, volume_first_hit, 0,
                 DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
-            !_composition_set_latest_expansion(&draft, UINT32_MAX, UINT32_MAX, 0))
+            !_composition_set_latest_expansion(draft, UINT32_MAX, UINT32_MAX, 0))
             return _composition_report(
                 report, "panel %s volume occlusion expansion failed", render_plan->panel_id);
     }
@@ -1893,31 +1892,31 @@ bool _scene_panel_composition_resolve(
             render_plan->gbuffer_visuals, render_plan->gbuffer_visual_count,
             DVZ_PANEL_RENDER_INVALID_INDEX, &begin, &end);
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_SURFACE_CAPTURE, 0, surface_record, msaa_adaptation,
+                draft, DVZ_SCENE_TECHNIQUE_SURFACE_CAPTURE, 0, surface_record, msaa_adaptation,
                 DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
-            !_composition_set_latest_expansion(&draft, begin, end, 0))
+            !_composition_set_latest_expansion(draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s surface capture expansion failed", render_plan->panel_id);
-        if (draft.effective_sample_count > 1 &&
+        if (draft->effective_sample_count > 1 &&
             (!_composition_add_technique(
-                 &draft, DVZ_SCENE_TECHNIQUE_SURFACE_RESOLVE, surface_record, surface_record, 0,
+                 draft, DVZ_SCENE_TECHNIQUE_SURFACE_RESOLVE, surface_record, surface_record, 0,
                  DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
-             !_composition_set_latest_expansion(&draft, begin, end, 0)))
+             !_composition_set_latest_expansion(draft, begin, end, 0)))
             return _composition_report(
                 report, "panel %s surface resolve expansion failed", render_plan->panel_id);
     }
 
     if (effective_gtao)
     {
-        if ((draft.required_product_mask & surface_record) != surface_record)
+        if ((draft->required_product_mask & surface_record) != surface_record)
             return _composition_report(
                 report, "panel %s ambient visibility is missing the coherent surface record",
                 render_plan->panel_id);
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY, surface_record, ambient_visibility,
+                draft, DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY, surface_record, ambient_visibility,
                 0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
             !_composition_set_latest_expansion(
-                &draft, begin, end,
+                draft, begin, end,
                 render_plan->ao_state != NULL && render_plan->ao_state->denoise_enabled
                     ? COMPOSITION_EXPAND_GTAO_DENOISE
                     : 0))
@@ -1939,11 +1938,11 @@ bool _scene_panel_composition_resolve(
             render_plan->opaque_visuals, render_plan->opaque_visual_count,
             DVZ_PANEL_RENDER_INVALID_INDEX, &begin, &end);
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_OPAQUE_SHADING, opaque_inputs, opaque_outputs,
+                draft, DVZ_SCENE_TECHNIQUE_OPAQUE_SHADING, opaque_inputs, opaque_outputs,
                 msaa_adaptation,
                 msaa_reduced ? DVZ_SCENE_TECHNIQUE_FALLBACK_REDUCE_SAMPLES
                              : DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
-            !_composition_set_latest_expansion(&draft, begin, end, 0))
+            !_composition_set_latest_expansion(draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s opaque shading expansion failed", render_plan->panel_id);
     }
@@ -1952,10 +1951,10 @@ bool _scene_panel_composition_resolve(
         render_plan->ao_state->debug_mode == DVZ_AO_DEBUG_VISIBILITY)
     {
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_GTAO_VISIBILITY_PRESENTATION,
+                draft, DVZ_SCENE_TECHNIQUE_GTAO_VISIBILITY_PRESENTATION,
                 scene_color | ambient_visibility, scene_color, 0,
                 DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
-            !_composition_set_latest_expansion(&draft, begin, end, 0))
+            !_composition_set_latest_expansion(draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s ambient debug presentation expansion failed",
                 render_plan->panel_id);
@@ -1964,10 +1963,10 @@ bool _scene_panel_composition_resolve(
     if (effective_edl)
     {
         if (!_composition_add_technique(
-                &draft, DVZ_SCENE_TECHNIQUE_EDL,
+                draft, DVZ_SCENE_TECHNIQUE_EDL,
                 scene_color | _composition_product_bit(DVZ_RENDER_PRODUCT_SURFACE_DEPTH),
                 scene_color, 0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
-            !_composition_set_latest_expansion(&draft, begin, end, 0))
+            !_composition_set_latest_expansion(draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s EDL expansion failed", render_plan->panel_id);
     }
@@ -1993,22 +1992,22 @@ bool _scene_panel_composition_resolve(
             if (group_layers == overlay_layer || group_layers == paint_layer)
             {
                 if (!_composition_add_technique(
-                        &draft, group_layers == paint_layer ? DVZ_SCENE_TECHNIQUE_PAINT_COMPOSITE :
-                                                            DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
-                        scene_color, scene_color, 0,
-                        DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
+                        draft,
+                        group_layers == paint_layer ? DVZ_SCENE_TECHNIQUE_PAINT_COMPOSITE
+                                                    : DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
+                        scene_color, scene_color, 0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
                     return _composition_report(
                         report, "panel %s overlay composition selection failed",
                         render_plan->panel_id);
                 if (!_composition_validate_technique_visuals(
                         render_plan, render_plan->blended_visuals,
                         render_plan->blended_visual_count, transparent->index,
-                        &draft.techniques[draft.technique_count - 1], report))
+                        &draft->techniques[draft->technique_count - 1], report))
                     return false;
                 if (_composition_blend_group_uses_source_over(render_plan, transparent->index))
-                    draft.techniques[draft.technique_count - 1].required_capability_mask |=
+                    draft->techniques[draft->technique_count - 1].required_capability_mask |=
                         COMPOSITION_CAP_COLOR_BLEND;
-                if (!_composition_set_latest_expansion(&draft, begin, end, 0))
+                if (!_composition_set_latest_expansion(draft, begin, end, 0))
                     return _composition_report(
                         report, "panel %s overlay composition expansion failed",
                         render_plan->panel_id);
@@ -2029,15 +2028,15 @@ bool _scene_panel_composition_resolve(
                     blend_inputs |= volume_first_hit;
             }
             if (!_composition_add_technique(
-                    &draft, blend_technique, blend_inputs, scene_color, 0,
+                    draft, blend_technique, blend_inputs, scene_color, 0,
                     DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
                 return _composition_report(
                     report, "panel %s source-over phase selection failed", render_plan->panel_id);
             if (!_composition_validate_technique_visuals(
                     render_plan, render_plan->blended_visuals, render_plan->blended_visual_count,
-                    transparent->index, &draft.techniques[draft.technique_count - 1], report))
+                    transparent->index, &draft->techniques[draft->technique_count - 1], report))
                 return false;
-            if (!_composition_set_latest_expansion(&draft, begin, end, 0))
+            if (!_composition_set_latest_expansion(draft, begin, end, 0))
                 return _composition_report(
                     report, "panel %s source-over phase expansion failed", render_plan->panel_id);
         }
@@ -2057,7 +2056,7 @@ bool _scene_panel_composition_resolve(
             if (render_plan->scene_occlusion_enabled)
                 wboit_inputs |= scene_occlusion;
             if (!_composition_add_technique(
-                    &draft, DVZ_SCENE_TECHNIQUE_WBOIT, wboit_inputs, scene_color | wboit_products,
+                    draft, DVZ_SCENE_TECHNIQUE_WBOIT, wboit_inputs, scene_color | wboit_products,
                     0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
                 return _composition_report(
                     report,
@@ -2065,9 +2064,9 @@ bool _scene_panel_composition_resolve(
                     render_plan->panel_id);
             if (!_composition_validate_technique_visuals(
                     render_plan, render_plan->wboit_visuals, render_plan->wboit_visual_count,
-                    transparent->index, &draft.techniques[draft.technique_count - 1], report))
+                    transparent->index, &draft->techniques[draft->technique_count - 1], report))
                 return false;
-            if (!_composition_set_latest_expansion(&draft, begin, end, 0))
+            if (!_composition_set_latest_expansion(draft, begin, end, 0))
                 return _composition_report(
                     report, "panel %s WBOIT expansion failed", render_plan->panel_id);
         }
@@ -2087,16 +2086,16 @@ bool _scene_panel_composition_resolve(
             if (render_plan->scene_occlusion_enabled)
                 peel_inputs |= scene_occlusion;
             if (!_composition_add_technique(
-                    &draft, DVZ_SCENE_TECHNIQUE_DEPTH_PEEL, peel_inputs,
+                    draft, DVZ_SCENE_TECHNIQUE_DEPTH_PEEL, peel_inputs,
                     scene_color | peel_products, 0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
                 return _composition_report(
                     report, "panel %s depth-peel selection failed", render_plan->panel_id);
             if (!_composition_validate_technique_visuals(
                     render_plan, render_plan->depth_peel_visuals,
                     render_plan->depth_peel_visual_count, transparent->index,
-                    &draft.techniques[draft.technique_count - 1], report))
+                    &draft->techniques[draft->technique_count - 1], report))
                 return false;
-            if (!_composition_set_latest_expansion(&draft, begin, end, 0))
+            if (!_composition_set_latest_expansion(draft, begin, end, 0))
                 return _composition_report(
                     report, "panel %s depth-peel expansion failed", render_plan->panel_id);
         }
@@ -2104,7 +2103,7 @@ bool _scene_panel_composition_resolve(
 
     if (render_plan->drawable_count > 0 &&
         !_composition_add_technique(
-            &draft, DVZ_SCENE_TECHNIQUE_PRESENTATION, scene_color,
+            draft, DVZ_SCENE_TECHNIQUE_PRESENTATION, scene_color,
             _composition_product_bit(DVZ_RENDER_PRODUCT_PRESENTATION_COLOR), 0,
             DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
         return _composition_report(
@@ -2114,21 +2113,48 @@ bool _scene_panel_composition_resolve(
     for (uint32_t i = 0; i < render_plan->blended_group_count; i++)
         blended_depth = blended_depth || render_plan->blended_needs_depth[i];
     const uint32_t opaque_samples =
-        draft.effective_sample_count > 1 && render_plan->wboit_visual_count == 0 &&
+        draft->effective_sample_count > 1 && render_plan->wboit_visual_count == 0 &&
                 render_plan->depth_peel_visual_count == 0 && !effective_edl &&
                 (render_plan->blended_group_count == 0 || !blended_depth)
-            ? draft.effective_sample_count
+            ? draft->effective_sample_count
             : 1;
-    if (!_composition_validate_capabilities(&draft, render_plan->panel_id, report) ||
-        !_composition_resolve_product_chain(&draft, render_plan->panel_id, report) ||
-        !_composition_expand_all(&draft, render_plan, opaque_samples))
+    if (!_composition_validate_capabilities(draft, render_plan->panel_id, report) ||
+        !_composition_resolve_product_chain(draft, render_plan->panel_id, report) ||
+        !_composition_expand_all(draft, render_plan, opaque_samples))
         return false;
-    draft.work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(&draft);
-    if (!_scene_panel_composition_contract_validate(&draft, report))
+    draft->work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(draft);
+    if (!_scene_panel_composition_contract_validate(draft, report))
         return false;
-    draft.valid = true;
-    if (!_frame_plan_composition_validate(&draft, report))
+    draft->valid = true;
+    if (!_frame_plan_composition_validate(draft, report))
         return false;
-    *out = draft;
     return true;
+}
+
+
+
+/**
+ * Resolve composition transactionally using an owned draft.
+ *
+ * @param render_plan panel render plan
+ * @param caps optional capabilities
+ * @param out output snapshot, unchanged on failure
+ * @param report optional diagnostic report
+ * @return whether composition succeeded
+ */
+bool _scene_panel_composition_resolve(
+    const DvzPanelRenderPlan* render_plan, const DvzCapabilitySnapshot* caps,
+    DvzPanelCompositionSnapshot* out, DvzDiagnosticReport* report)
+{
+    ANN(render_plan);
+    ANN(out);
+    DvzPanelCompositionSnapshot* draft =
+        (DvzPanelCompositionSnapshot*)dvz_calloc(1, sizeof(*draft));
+    if (draft == NULL)
+        return false;
+    bool ok = _scene_panel_composition_resolve_draft(render_plan, caps, draft, report);
+    if (ok)
+        *out = *draft;
+    dvz_free(draft);
+    return ok;
 }

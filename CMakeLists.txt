@@ -48,6 +48,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allocator & sanitizer options
 option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" OFF)
+option(DVZ_STACK_USAGE "Analyze production stack frames with GCC or MSVC" OFF)
 option(DVZ_ENABLE_COVERAGE "Enable code coverage instrumentation for supported compilers" OFF)
 option(DVZ_ENABLE_GPROF "Enable gprof instrumentation (-pg) on supported compilers" OFF)
 set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds (asan, msan, tsan, or a comma-separated list)")
@@ -639,22 +640,59 @@ foreach(_dvz_target ${_dvz_targets})
     if(TARGET ${_dvz_target})
         get_target_property(_dvz_target_type ${_dvz_target} TYPE)
 
+        if(DVZ_STACK_USAGE)
+            if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                target_compile_options(${_dvz_target} PRIVATE
+                    $<$<COMPILE_LANGUAGE:C,CXX>:-fstack-usage>)
+                get_target_property(_dvz_source_dir ${_dvz_target} SOURCE_DIR)
+                if(_dvz_source_dir MATCHES "^${PROJECT_SOURCE_DIR}/src($|/)")
+                    target_compile_options(${_dvz_target} PRIVATE
+                        $<$<COMPILE_LANGUAGE:C,CXX>:-Wstack-usage=16384;-Wframe-larger-than=16384>)
+                endif()
+            elseif(MSVC)
+                get_target_property(_dvz_source_dir ${_dvz_target} SOURCE_DIR)
+                if(_dvz_source_dir MATCHES "^${PROJECT_SOURCE_DIR}/src($|/)")
+                    target_compile_options(${_dvz_target} PRIVATE
+                        /analyze "SHELL:/analyze:stacksize 16384")
+                endif()
+            else()
+                message(FATAL_ERROR "DVZ_STACK_USAGE requires GCC or MSVC; unsupported compiler")
+            endif()
+        endif()
+
         if(DVZ_COMMON_COMPILE_OPTIONS)
             target_compile_options(${_dvz_target} PRIVATE
                 $<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:${DVZ_COMMON_COMPILE_OPTIONS}>
             )
         endif()
 
-        if(DVZ_COMPILE_OPTIONS_C)
-            target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:C>:${DVZ_COMPILE_OPTIONS_C}>)
-        endif()
-
-        if(DVZ_COMPILE_OPTIONS_CXX)
-            target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DVZ_COMPILE_OPTIONS_CXX}>)
-        endif()
-
-        if(DVZ_COMPILE_OPTIONS_OBJC)
-            target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:OBJC>:${DVZ_COMPILE_OPTIONS_OBJC}>)
+        # Visual Studio treats target language expressions as C++ in mixed C/C++ targets.
+        # Source properties keep C11 atomics and language standards on the right compiler input.
+        if(MSVC AND CMAKE_GENERATOR MATCHES "^Visual Studio")
+            get_target_property(_dvz_sources ${_dvz_target} SOURCES)
+            foreach(_dvz_source IN LISTS _dvz_sources)
+                if(_dvz_source MATCHES "\\$<")
+                    continue()
+                endif()
+                get_source_file_property(_dvz_language "${_dvz_source}"
+                    TARGET_DIRECTORY ${_dvz_target} LANGUAGE)
+                get_source_file_property(_dvz_options_set "${_dvz_source}"
+                    TARGET_DIRECTORY ${_dvz_target} DVZ_LANGUAGE_OPTIONS_SET)
+                if(NOT _dvz_options_set AND
+                   (_dvz_language STREQUAL "C" OR _dvz_language STREQUAL "CXX"))
+                    set_property(SOURCE "${_dvz_source}" TARGET_DIRECTORY ${_dvz_target}
+                        APPEND PROPERTY COMPILE_OPTIONS ${DVZ_COMPILE_OPTIONS_${_dvz_language}})
+                    set_property(SOURCE "${_dvz_source}" TARGET_DIRECTORY ${_dvz_target}
+                        PROPERTY DVZ_LANGUAGE_OPTIONS_SET TRUE)
+                endif()
+            endforeach()
+        else()
+            foreach(_dvz_language C CXX OBJC)
+                if(DVZ_COMPILE_OPTIONS_${_dvz_language})
+                    target_compile_options(${_dvz_target} PRIVATE
+                        $<$<COMPILE_LANGUAGE:${_dvz_language}>:${DVZ_COMPILE_OPTIONS_${_dvz_language}}>)
+                endif()
+            endforeach()
         endif()
 
         if(_dvz_compile_definitions)

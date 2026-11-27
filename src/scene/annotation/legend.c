@@ -149,8 +149,6 @@ void _scene_mark_legend_dirty(DvzLegend* legend)
 
 
 
-
-
 /**
  * Return whether a legend anchor is supported by the first slice.
  *
@@ -237,8 +235,6 @@ static void _legend_apply_auto_reserve(DvzLegend* legend)
         return;
     _scene_panel_refresh_legend_reserve(legend->panel);
 }
-
-
 
 
 
@@ -368,22 +364,28 @@ static void _legend_append_text(
  * Update the legend batched text visual.
  *
  * @param legend the legend
+ * @return whether the text update completed without a retryable failure
  */
-static void _legend_update_text(DvzLegend* legend)
+static bool _legend_update_text(DvzLegend* legend)
 {
     ANN(legend);
     if (legend->text_visual == NULL || legend->text_count == 0)
     {
         if (legend->text_visual != NULL)
             dvz_visual_set_visible(legend->text_visual, false);
-        return;
+        return true;
     }
     if (_scene_adornment_text_visual_set_renderer(legend->text_visual, legend->text_renderer) != 0)
     {
         dvz_visual_set_visible(legend->text_visual, false);
-        return;
+        return false;
     }
-    const char* strings[DVZ_SCENE_MAX_LEGEND_TEXTS] = {0};
+    const char** strings = (const char**)dvz_calloc(legend->text_count, sizeof(*strings));
+    if (strings == NULL)
+    {
+        dvz_visual_set_visible(legend->text_visual, false);
+        return false;
+    }
     for (uint32_t i = 0; i < legend->text_count; i++)
         strings[i] = legend->text_labels[i];
     DvzVisualDataUpdate updates[5] = {
@@ -393,8 +395,10 @@ static void _legend_update_text(DvzLegend* legend)
         {.attr_name = "color", .data = legend->text_colors, .item_count = legend->text_count},
         {.attr_name = "angle", .data = legend->text_angles, .item_count = legend->text_count},
     };
-    if (dvz_visual_set_strings(legend->text_visual, "text", strings, legend->text_count) == 0 &&
-        dvz_visual_set_data_many(legend->text_visual, updates, 5) == 0)
+    bool ok =
+        dvz_visual_set_strings(legend->text_visual, "text", strings, legend->text_count) == 0 &&
+        dvz_visual_set_data_many(legend->text_visual, updates, 5) == 0;
+    if (ok)
     {
         dvz_visual_set_visible(legend->text_visual, true);
     }
@@ -402,6 +406,8 @@ static void _legend_update_text(DvzLegend* legend)
     {
         dvz_visual_set_visible(legend->text_visual, false);
     }
+    dvz_free(strings);
+    return ok;
 }
 
 
@@ -620,8 +626,23 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
         return;
     }
 
-    uint32_t sorted[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
-    uint32_t count = _legend_sorted_category_indices(legend->scale, sorted);
+    typedef struct LegendWorkspace
+    {
+        uint32_t sorted[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+        float mark_positions[DVZ_SCENE_MAX_SCALE_CATEGORIES][3];
+        DvzColor mark_colors[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+        float mark_sizes[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+        float mark_angles[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+        uint32_t mark_shapes[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+    } LegendWorkspace;
+    LegendWorkspace* workspace = (LegendWorkspace*)dvz_calloc(1, sizeof(*workspace));
+    if (workspace == NULL)
+    {
+        legend->dirty = true;
+        _legend_hide(legend);
+        return;
+    }
+    uint32_t count = _legend_sorted_category_indices(legend->scale, workspace->sorted);
     legend->entry_count = count;
     legend->text_count = 0;
 
@@ -631,26 +652,23 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
             legend, legend->title, rect[0], rect[1], 0.0f, 0.0f, LEGEND_TITLE_TEXT_SIZE_PX);
     }
 
-    float mark_positions[DVZ_SCENE_MAX_SCALE_CATEGORIES][3] = {{0}};
-    DvzColor mark_colors[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {{0}};
-    float mark_sizes[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
-    float mark_angles[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
-    uint32_t mark_shapes[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
     float y = rect[1] + (legend->title[0] != '\0' ? 24.0f : 0.0f) + 0.5f * legend->mark_size_px;
     uint32_t mark_count = 0;
     for (uint32_t i = 0; i < count; i++)
     {
-        const DvzScaleCategoryState* category = &legend->scale->categories[sorted[i]];
+        const DvzScaleCategoryState* category = &legend->scale->categories[workspace->sorted[i]];
         float mark_x = rect[0] + 0.5f * legend->mark_size_px;
         if (y + 0.5f * legend->mark_size_px > rect[3])
             break;
-        _legend_pixel_to_visual(width, height, mark_x, y, 0.0f, mark_positions[mark_count]);
-        mark_colors[mark_count] = category->color;
-        mark_sizes[mark_count] = _legend_category_highlighted(legend, category->category_id) ?
-                                     1.45f * legend->mark_size_px :
-                                     legend->mark_size_px;
-        mark_angles[mark_count] = 0.0f;
-        mark_shapes[mark_count] = DVZ_MARKER_SHAPE_SQUARE;
+        _legend_pixel_to_visual(
+            width, height, mark_x, y, 0.0f, workspace->mark_positions[mark_count]);
+        workspace->mark_colors[mark_count] = category->color;
+        workspace->mark_sizes[mark_count] =
+            _legend_category_highlighted(legend, category->category_id)
+                ? 1.45f * legend->mark_size_px
+                : legend->mark_size_px;
+        workspace->mark_angles[mark_count] = 0.0f;
+        workspace->mark_shapes[mark_count] = DVZ_MARKER_SHAPE_SQUARE;
 
         char fallback[32] = {0};
         const char* label = category->has_label ? category->label : fallback;
@@ -664,18 +682,18 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
     }
 
     DvzVisualDataUpdate updates[5] = {
-        {.attr_name = "position", .data = mark_positions, .item_count = mark_count},
-        {.attr_name = "color", .data = mark_colors, .item_count = mark_count},
-        {.attr_name = "diameter_px", .data = mark_sizes, .item_count = mark_count},
-        {.attr_name = "angle", .data = mark_angles, .item_count = mark_count},
-        {.attr_name = "shape", .data = mark_shapes, .item_count = mark_count},
+        {.attr_name = "position", .data = workspace->mark_positions, .item_count = mark_count},
+        {.attr_name = "color", .data = workspace->mark_colors, .item_count = mark_count},
+        {.attr_name = "diameter_px", .data = workspace->mark_sizes, .item_count = mark_count},
+        {.attr_name = "angle", .data = workspace->mark_angles, .item_count = mark_count},
+        {.attr_name = "shape", .data = workspace->mark_shapes, .item_count = mark_count},
     };
     if (mark_count > 0 && dvz_visual_set_data_many(legend->mark_visual, updates, 5) == 0)
         dvz_visual_set_visible(legend->mark_visual, true);
     else
         dvz_visual_set_visible(legend->mark_visual, false);
-    _legend_update_text(legend);
-    legend->dirty = false;
+    legend->dirty = !_legend_update_text(legend);
+    dvz_free(workspace);
 }
 
 
@@ -705,9 +723,6 @@ static bool _legend_needs_visual_update(const DvzLegend* legend)
     return fabsf(width - legend->realized_panel_width) > LEGEND_LAYOUT_EPS ||
            fabsf(height - legend->realized_panel_height) > LEGEND_LAYOUT_EPS;
 }
-
-
-
 
 
 

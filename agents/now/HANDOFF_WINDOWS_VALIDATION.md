@@ -1,10 +1,135 @@
 # Windows Native Validation Handoff
 
-Status: source-checkout AMD/NVIDIA matrices, FIFO frame-slot comparison, and checkout-backed vcpkg consumer proof are complete; visible DRP2 live-canvas asymmetry, a Vulkan-enabled PyQt provider, and exact-candidate proof remain. Platform availability updated: 2026-10-10; the completed native matrix below retains its 2026-08-03 evidence.
+Status: Windows stack/build fixes, the automated source matrix, and the six-example Windows desktop review are complete. The [next-session handoff](#next-session-handoff-2026-11-25) defines the remaining work. Video fallback, provider trust, and exact-candidate proof remain open.
 
 ## Current Availability
 
-The physical Windows validation machine is unavailable as of 2026-10-10. Leave native runtime, visible AMD/NVIDIA, and exact-candidate physical gates pending; continue independent checks on available platforms. The latest conda provider compiled, but application control rejected its GLFW dependency before Python import and provider rendering; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and PyPI-provider results below do not describe a newly validated RC3 artifact. When the machine returns, follow [the current development queue](STATUS.md#next-development-checks) and [provider-specific platform checks](QT_MACOS_VULKAN_HANDOFF.md#next-available-platform-checks) before the later exact-candidate campaign. RC3 remains unfrozen during course proofreading.
+The Windows machine was available for the source checks below on 2026-11-25. Availability for future remote or attended sessions must be confirmed when needed. The earlier conda provider run was blocked before Python import; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and provider results do not validate an RC3 artifact. RC3 remains unfrozen during course proofreading.
+
+## Next-Session Handoff, 2026-11-25
+
+Continue on `main` with the video-fallback slice below. The stack/build batch and source review are complete. Source validation applies to `4a8a0c59c`, including the runtime fix at `b106bba7b`; later commits record evidence and maintainer review. The completed scope is Linux scene 782/782 and canvas-filter 50/50, Windows scene 781/781 in all four Debug/Release and AMD/NVIDIA runs, and Windows desktop canvas 107 passed plus three skipped per run. All six Windows source examples received positive maintainer review, including picking after reopening. See the detailed evidence below. These results do not cover every repository test, optional configuration, per-GPU manual interaction, or final release artifact.
+
+1. **Fix the video fallback next.** Reproduce the two NVENC-specific cases listed under [video fallback](#video-fallback-finding) with NVENC disabled. Inspect `src/video/encoder_backend.c`, `src/video/encoder_backend_kvazaar.c`, `src/video/video_sink.c`, and their canvas integration tests. An unavailable backend must return an unsupported/error result or select a compatible CPU RGBA/readback path before attempting to map imported memory. Preserve borrowed-handle ownership and supported encoder paths; do not hide the invalid map by suppressing validation messages or changing the cases to unconditional skips.
+2. **Validate the correction within its scope.** Add focused regression coverage for backend unavailability and incompatible memory. Run the affected video/canvas cases on Linux and both Windows GPUs in the logged-in desktop, with Debug validation layers enabled, then check Release behavior. Acceptance requires no `VUID-vkMapMemory-memory-00682`, correct failure cleanup, and preserved supported CPU encoding. Keep unavailable backend skips distinct from passes. Refresh bindings first if public headers or binding policy change. Stop this implementation slice after focused checks and the evidence update; broaden testing only for changed behavior or unresolved failures.
+3. **Resume RC3 readiness after that slice.** Prepare the pre-freeze blocker table described in [STATUS.md](STATUS.md#next-agent-handoff-2026-11-23), carrying forward this completed source matrix and manual review. Course proofreading and candidate scope/freeze decisions remain with the maintainer. The Windows Qt/PyQt dependency-trust blocker remains a separate lane; do not change security policy merely to obtain a pass.
+4. **Validate exact artifacts after freeze.** Repeat the required installed-source/wheel/package and physical-platform checks against the selected artifact identities and checksums. Current checkout evidence does not replace those gates. Follow current publication authorization rather than treating this delivery request as approval for future releases or posts.
+
+For Windows presentation, use the logged-in desktop. The SSH session's AMD swapchain failures are recorded environment limitations, not passing tests; GPU index order differs between sessions. Discover indices in the session running each check and record device identity. Temporary launchers have been removed. Raw evidence remains ignored under `build/windows-validation/`; regenerate it on another machine when unavailable.
+
+This handoff and the revised status/dispatch prose received the humanizer pass and a final check for clear wording. Older historical sections were not re-reviewed.
+
+## Linux-Led Windows Fixes, 2026-11-25
+
+The code batch at `a2be5baf6` moves large scene planning, composition, graph-lowering, emitter, draw, legend, axis-label, text-layout, and recording-loader workspaces off the stack. Composition dependency validation uses a bitset. Failure paths retain transactional output and graph counts; legend allocation failures remain eligible for retry. Large composition test fixtures and the recording JSON buffer use heap storage. Repeatability compares serialized composition fields rather than unspecified C structure padding.
+
+The default Windows build now uses MSVC x64 and Ninja in `build`. The helper selects its own Python interpreter for CMake, checks PyYAML, initializes the developer environment, rejects incompatible caches, and stages runtime DLLs beside libraries and executables. Visual Studio mixed-language targets receive C and C++ options through source properties, with a configure-time C11 atomics probe. CI uses the documented Windows route and checks Linux stack reports; hosted execution of that full test workflow remains unverified.
+
+### Completed Linux evidence
+
+- GCC 13.3 Debug: 373/373 configured Datoviz-owned production compilation units accounted for, including eight empty reports; 7,844 frame records and no frames above 16 KiB. Seven browser-only C sources are outside this native configuration. CUDA/NVENC and the optional Qt bridge were enabled.
+- GCC 13.3 Release, CUDA disabled: 372/372 configured owned units accounted for, including seven empty reports; 3,863 frame records and no frames above 16 KiB. The browser sources and NVENC backend were excluded. The largest owned frame was 14,960 bytes in recording loading; Debug's largest was 12,352 bytes in axis text preparation.
+- `direnv exec . just test scene`: 782/782 pass, no failures or skips. `just test recording`: 9/9 pass. The selected 58 CPU-only planning, composition, annotation, text, and recording cases pass under ASan with leak detection enabled.
+- A broader sanitizer run reached external D-Bus/graphics-runtime leaks; it is not a clean sanitizer pass. The CPU-only run above has no reported sanitizer errors or leaks.
+- `just ctypes` and `just ctypes-check` pass, including ABI validation for 207 records. The 30 Python tooling tests pass, and `just --dump` parses the recipes.
+- The changed prerequisite row, Windows instructions, scatter note, and stack-analysis section in the source-build guide, plus the new build-option row, received the humanizer pass. `just docs-build-check` and `just docs-status-check` pass, including the rendered language-tab check for 408 Markdown pages and 414 HTML pages. This handoff's new section also received the humanizer pass; older sections were not re-reviewed.
+
+### Windows evidence and limits
+
+Native runs use a verified source hash manifest for `a2be5baf6`. Archive extraction can preserve timestamps older than existing objects, so transferred source hashes were verified and timestamps refreshed before compilation. Earlier incremental runs are diagnostic evidence only. The native compile-command audit accounts for 371 configured owned production units, with no missing or source-stale objects. The scene executable's PE header confirms a 1,048,576-byte stack reserve.
+
+| Check | Configuration and result |
+| --- | --- |
+| Toolchain | Windows 11 x64, Visual Studio 2022 / MSVC 14.44.35207, Vulkan SDK 1.4.350.0, Python 3.12. CUDA and Qt bridge disabled. |
+| NVIDIA Release | 781/781 scene tests pass, no failures or skips; requested and resolved GPU index 0, GeForce RTX 5060 Laptop GPU, vendor/device `0x10de/0x2d59`, API version raw `4211017`, driver version raw `2497167360`. |
+| AMD Release | 781/781 scene tests pass, no failures or skips; requested and resolved GPU index 1, Radeon 780M Graphics, vendor/device `0x1002/0x1900`, API version raw `4211003`, driver version raw `8388961`. |
+| NVIDIA Debug | 781/781 scene tests pass, no failures or skips; requested and resolved index 0, same device identity as Release. |
+| AMD Debug | 781/781 scene tests pass, no failures or skips; requested and resolved index 1, same device identity as Release. |
+| MSVC Debug analysis | Full configured build and the excluded atlas-generator target succeed. No C6262 warnings in owned production sources; five warnings remain in unchanged vendored `fpng`, with a maximum reported frame of 17,176 bytes. Other compiler/analyzer warnings remain outside the changed production files; this is not a clean general static-analysis claim. |
+| Source consumers | Clean `just build Release`, default `just test planning`, Python source import, raw ctypes and array-facade smokes, and Windows manifest example discovery pass. `scatter --live 120` completes all 120 frames and exits zero; rendering and interaction were not observed. |
+
+Both full Debug runs reported that the validation layer was unavailable. Those results establish execution and assertions; they are not validation-layer passes. Raw reports, compiler logs, source manifests, and stack inventories remain in ignored build evidence. No binaries, submodule changes, machine-access details, or reports are part of this batch.
+
+### Resize follow-up and validation layers
+
+A later four-case Debug run exposed an order-dependent failure in `test_app_offscreen_resize_reuses_runtime_with_mesh_and_image` on AMD. Repeating that subset reproduced the failure once in three rounds. Each offscreen resize replaced the borrowed command-buffer handle used to scope runtime resources; fresh handles could add depth targets beyond the test's expected count. The earlier full-suite passes did not expose this allocation-dependent behavior.
+
+Commit `b106bba7b` retains the canvas-owned offscreen command buffer across image resizes and waits for the prior submission before retiring images. The canvas regression now requires the same command buffer after resize, and the scene regression requires unchanged semantic and backend object counts from the first frame onward. Image generations still advance, and retired images remain available to live-image consumers.
+
+The elevated Windows SSH session causes the Vulkan loader to ignore layer-path environment variables. The SDK validation layer was installed but absent from the machine's explicit-layer registry. A temporary registration enabled the focused runs below; its value was removed afterward. Loader logs confirm Khronos validation-layer insertion in all four runs, with no VUID messages, validation errors, or validation warnings. Loader registry-discovery diagnostics remain; these are not warning-free loader logs.
+
+- Linux: `just build`, the full scene suite (782/782), the canvas filter (50/50), and the isolated resize case pass. The refreshed GCC Debug inventory accounts for 373/373 configured production units, with no frame violations above 16 KiB.
+- Windows Debug: `just build` passes using the existing virtual environment. On each of NVIDIA and AMD, three rounds of the four-case dynamic-emission, point-emission, retained-frame, and resize subset pass (12/12); three rounds of the canvas depth/resize case also pass (3/3). Transferred source hashes match the local manifest for the tested source.
+
+At this checkpoint, the resize correction had focused Windows Debug evidence; the [final source matrix](#final-source-matrix-2026-11-25) below adds the full scene and desktop canvas runs. The earlier Windows Debug/Release matrix above applies to `a2be5baf6`, before the resize correction. The revised public build instructions, option row, dispatch paragraph, and this new handoff section received the humanizer pass and a final check for direct wording; older prose was not re-reviewed.
+
+Compiler frame reports cover the recorded compiler, configuration, and enabled sources. They do not bound total call-stack depth or validate disabled platform code. The 256 KiB worker regression exercises empty and populated planning, composition, graph lowering, and stream emission. Allocation regressions cover unchanged outputs, graph rollback after product-map allocation failure, and legend retry; dependency chains and cycles cross indices 63/64 and 127/128.
+
+The read-only audit also identified extent-reference and load-source recursion for a separate cycle-rejection investigation; those paths were not proven defective or changed in this batch. Attended rendering and interaction, the earlier visible DRP2 asymmetry, provider trust, and exact-candidate artifact proof remain separate gates. MinGW remains an unvalidated optional route.
+
+## Final Source Matrix, 2026-11-25
+
+The follow-up tests source commit `4a8a0c59c`, including the offscreen command-buffer fix at `b106bba7b`. A Windows audit matched 1,283 tracked source, header, build, and tooling files; 694 differed only by Git's CRLF conversion. Debug and Release were rebuilt with MSVC/Ninja, CUDA and the Qt bridge disabled. This is checkout evidence, not accepted-candidate artifact proof.
+
+| Suite and environment | NVIDIA Debug | AMD Debug | NVIDIA Release | AMD Release |
+| --- | --- | --- | --- | --- |
+| Full scene executable over SSH | 781/781 pass | 781/781 pass | 781/781 pass | 781/781 pass |
+| Full canvas executable in the logged-in desktop | 107 pass, 3 skip | 107 pass, 3 skip | 107 pass, 3 skip | 107 pass, 3 skip |
+
+Both Debug scene logs confirm 56 Khronos validation-layer insertions, with no validation callbacks or unavailable-layer warnings. The Release scene runs do not request the layer; their passes establish assertions and execution, not validation-layer coverage. The canvas executable includes companion subsystem cases, hence its 110-case total. Skips and video diagnostics remain separate from assertion passes.
+
+The SSH session cannot serve as AMD presentation proof on this machine: both configurations fail 22 canvas presentation cases with `VK_ERROR_FORMAT_NOT_SUPPORTED` at swapchain creation. The same destroy/recreate probe passes in the logged-in desktop, and the full desktop canvas matrix above has no assertion failures. GPU indices also differ by session: SSH enumerates NVIDIA as 0 and AMD as 1; the desktop enumerates AMD as 0 and NVIDIA as 1. Discover devices in the session running the tests and verify the recorded vendor/device identity rather than copying indices between sessions.
+
+### Automated visual checks and maintainer review
+
+Release GLFW captures from the logged-in desktop show the requested 100,000-point scene on both GPUs, before and after resize. Orange points cover about 82% of each image; at this density the overlapping points form a filled rectangle. The initial captures are 1000×750 pixels and the resized captures are 1182×853. AMD/NVIDIA comparisons have a mean absolute RGBA channel difference below 0.008 on the 0–255 scale, with maximum channel differences of 20 and 21. All four captures were inspected; neither a blank frame nor a single isolated point appears. The historical asymmetry does not reproduce on this source in the desktop session.
+
+The capture helper observed both processes exit after posting a close request, but its PowerShell process objects did not retain native exit codes. This is capture/resize evidence, not a manual close/reopen pass. The full desktop canvas tests supply separate automated lifecycle evidence. Static Linux captures of scatter, arcball, text, and textured mesh were also inspected at 800×600; they show no obvious blank output or clipping.
+
+Release binaries are ready in the default Windows `build` tree. Temporary desktop runners, windows, power requests, and validation-layer registration were removed. Reports, manifests, logs, captures, and image-comparison metrics remain under ignored `build/windows-validation/` evidence on the integration host. These new handoff sections and the revised dispatch paragraph received the humanizer pass and a final wording check; older prose was not re-reviewed.
+
+On 2026-11-25, the maintainer reviewed all six Release examples in the logged-in Windows desktop and reported each as good or working after the requested actions below. Picking was closed, reopened, and confirmed working again. Replies were brief confirmations rather than an itemized account of every action. All review windows were closed and temporary launchers removed afterward.
+
+| Example executable under `build/examples/c/` | Requested action |
+| --- | --- |
+| `start/scatter.exe --live` | Resize, pan, wheel-zoom, close, reopen, and check responsiveness. |
+| `features/controller_arcball.exe --live` | Rotate and zoom; check depth and motion. |
+| `features/text_block.exe --live` | Resize; check text placement and legibility. |
+| `features/image_probe.exe --live` | Move the probe; check that its readout changes coherently. |
+| `features/mesh_texture.exe --live` | Rotate; check texture and depth. |
+| `features/picking.exe --live` | Pick items, resize, close, reopen, and pick again. |
+
+These are maintainer-reported source-development results with the examples' default device selection. They do not establish per-GPU manual proof or replace the later exact-wheel physical profile. The recorded observations are retained with the ignored native desktop evidence. The updated review status and result paragraphs received the humanizer pass and a final wording check.
+
+### Video fallback finding
+
+Two NVENC-specific canvas cases request the unavailable NVENC backend, fall back to Kvazaar, and skip after startup fails. In the NVIDIA SSH runs, that fallback calls `vkMapMemory` on device-local memory without `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`, producing `VUID-vkMapMemory-memory-00682`. The cases are `test_canvas_video_sink_start_submit_integration` and `test_canvas_video_sink_disable_rebuild`; `test_video_nvenc` also skips because NVENC was disabled at build time. The same two map-memory VUIDs occur on both GPUs in the desktop Debug canvas runs. The aggregate pass count does not make this a clean video validation run.
+
+The fallback crosses backend selection and imported-memory requirements. It was diagnosed but not changed in this stack/build batch. Before claiming external-video fallback support with NVENC disabled, make backend selection reject incompatible imported memory or use the existing CPU RGBA/readback route, then repeat the affected video cases with validation layers.
+
+## Linux-Led Windows Investigation, 2026-11-24
+
+Linux owns the investigation and fixes. Use the Windows validation host for native MSVC builds and tests when available; remote execution does not establish visible rendering or interaction. Keep access details in ignored local notes. Use high-effort Sol 6.1 subagents for independent read-only audits of stack use and Windows build paths, then integrate and validate their findings on Linux.
+
+### Evidence
+
+- At source head `82ef4b0a3`, a fresh Visual Studio 2022 x64 Release configuration with CUDA disabled needed PyYAML for the selected Python interpreter. The build failed because `scene.c` uses C11 atomics without `/experimental:c11atomics`: Visual Studio evaluates target-level `COMPILE_LANGUAGE:C` options as C++ in the mixed C/C++ scene target. A local source-specific option allowed the full build to complete; this partial change was not committed.
+- Windows application control initially blocked vcpkg `freetype.dll` and `zlib1.dll`. The maintainer disabled Smart App Control on this host; afterward the Release scatter scenario completed 120 live frames and exited normally. No visual or interaction observation was recorded. This does not resolve the separate conda GLFW provider gate.
+- The normal Release scene runner has a 1 MiB stack and crashed with stack overflow. A diagnostic copy with an 8 MiB stack passed 778/778 scene tests on AMD, with no failures or skips. Moving one 128 KiB test JSON buffer to heap made that individual case pass on the normal stack, but other scene cases still overflowed. This partial test change was not committed.
+- MSVC Release object disassembly showed stack frames of 361,320 bytes in `_scene_emit_panel_render_caps`, 360,248 bytes in its callee `_scene_panel_render_plan_build`, and 200,056 bytes in nested `_scene_panel_composition_resolve`. Their combined frame sizes are 921,624 bytes before other frames. `DvzPanelRenderPlan` is 360,192 bytes and `DvzPanelCompositionSnapshot` is 199,912 bytes in that build. These measurements establish production stack pressure, not the exact crash call stack.
+- On Windows, `just build` selects the MinGW recipe and requires GCC; this MSVC-only environment lacks GCC. `just docs-build-check` depends on that recipe and failed before its documentation checks. The separate `msvc` preset uses a multi-configuration `build-msvc` tree, while tests, Python loading, examples, and documentation recipes also assume other build layouts. A partial public-guide update was not committed.
+
+### Work plan
+
+1. Audit large stack objects and nested call paths across production and tests on Linux using compiler stack-usage reports and targeted call-chain analysis. Reproduce measurements with MSVC where possible. Prioritize render-plan and composition drafts; also check worker-thread and embedding paths. Capture exact crash stacks where practical.
+2. Design and implement owned heap or suitably scoped workspace storage for large working objects. Preserve transactional output behavior, concurrency, cleanup on every failure path, and allocation-failure handling. Do not use shared static scratch space. Reduce large test fixtures separately. A larger test executable stack alone is not a library fix.
+3. Add focused regression coverage for the affected planning and failure paths, including a deliberately bounded worker thread. Run Linux builds, focused tests, and suitable allocation or sanitizer checks. On Windows, run Debug and Release focused tests and the full scene suite with the normal 1 MiB stack; distinguish platform skips and validation messages. Repeat relevant GPU checks on both devices when available.
+4. Fix compiler-option handling for C and C++ across mixed Visual Studio targets, with a configure-time capability diagnostic if needed. Evaluate per-source options or separate object targets without losing generated shaders, exports, or dependency propagation. Verify generated commands for both Visual Studio and Ninja generators.
+5. Design a consistent Windows build workflow. Evaluate MSVC plus Ninja in `build` as the default, with an initialized developer environment and explicit diagnostics; retain MinGW as an explicit separate route only if validated. Audit all consumers of build directories, configuration-specific paths, Python native-library discovery, runtime DLL staging, tests, examples, and documentation. Do not silently reconfigure an incompatible existing build tree. Make Windows CI exercise the documented path.
+6. Update the public source-build guide after the chosen workflow works from a clean environment. Include PyYAML and interpreter selection, toolchain prerequisites, runtime paths, and appropriate test commands. Apply humanizer to revised prose and run the required documentation checks with their declared dependencies on a supported host.
+7. Record source revision, configurations, commands, GPU identity, test totals, skips, warnings, and any remaining limitation. Perform attended rendering, resize, interaction, close, and reopen checks separately. Source-checkout evidence does not replace exact-candidate artifact validation.
+
+The plan and new evidence above received the humanizer pass. Earlier prose in this handoff was not reviewed in this pass.
 
 ## Scope
 
@@ -27,19 +152,17 @@ Source-checkout results are development evidence only. They must not be reported
 
 ## 1. Resolve And Repeat The Visible AMD/NVIDIA Checks
 
-The automated symmetric source campaign is complete, but the earlier scripted Release GLFW screenshot check rendered one orange point on NVIDIA and a blank black frame on AMD; `--scene-points 100000` was parsed and reported but the NVIDIA screenshot still contained one point. Both processes closed normally and reported no Vulkan validation error. This visible gate remains open.
+The earlier scripted check produced one orange point on NVIDIA and a blank frame on AMD. The [current desktop captures](#automated-visual-checks-and-maintainer-review) show the dense scene on both GPUs, before and after resize. The source matrix also isolates AMD swapchain-creation failures to the SSH session. The six-example source review above is complete. A separate human comparison of this grid on both GPU indices was not performed; use the logged-in desktop for that comparison when required.
 
-1. Determine why the DRP2 live canvas is blank on AMD and why the requested 100,000-point grid appears as a single point on NVIDIA.
-2. Repeat the Release GLFW live canvas on GPU 0 and GPU 1 after affected runtime changes land.
+1. Discover the GPUs in the desktop session; do not reuse SSH indices without checking device identity.
+2. Run the Release GLFW live canvas on each GPU using the verified index.
 3. Confirm visible rendering, resize, normal close, and reopen on each window; record pass, fail, or skip with a reason.
-4. Keep expected capability skips separate from the unexplained asymmetry: AMD has no NVENC and lacks the tested external-memory path, while the NVIDIA GLFW lifecycle case has an expected platform skip.
+4. Record each capability skip with its current reason, and keep the video-fallback diagnostics in their own scope.
 
 ```powershell
-& .\build-msvc\testing\Release\dvztest.exe --list-gpus
-& .\build-msvc\testing\Release\dvztest.exe --module <module> --gpu 0 --json <amd-report.json>
-& .\build-msvc\testing\Release\dvztest.exe --module <module> --gpu 1 --json <nvidia-report.json>
-& .\build-msvc\testing\Release\dvz_live_canvas.exe --backend glfw --gpu 0 --frames 300
-& .\build-msvc\testing\Release\dvz_live_canvas.exe --backend glfw --gpu 1 --frames 300
+& .\build\testing\dvz_live_canvas.exe --list-gpus
+& .\build\testing\dvz_live_canvas.exe --backend glfw --draw scene-drp2 --scene-points 100000 --gpu 0
+& .\build\testing\dvz_live_canvas.exe --backend glfw --draw scene-drp2 --scene-points 100000 --gpu 1
 ```
 
 Do not treat `VK_LOADER_DRIVERS_SELECT` as the selector contract; it is only an optional cross-check.

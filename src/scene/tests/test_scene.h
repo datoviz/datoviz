@@ -946,6 +946,10 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
 
 int test_scene_gtao_graph_foundation(TstContext* suite, const TstCase* item);
 
+int test_scene_legend_workspace_allocation_retry(TstContext* suite, const TstCase* item);
+int test_scene_legend_strings_allocation_retry(TstContext* suite, const TstCase* item);
+int test_scene_planning_bounded_stack(TstContext* suite, const TstCase* item);
+int test_scene_planning_workspace_failure(TstContext* suite, const TstCase* item);
 int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item);
 
 int test_scene_graph_runtime_targets_grow(TstContext* suite, const TstCase* item);

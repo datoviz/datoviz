@@ -7816,15 +7816,6 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
             AT(semantic_object_count > 0);
             AT(vklite_object_count > 0);
         }
-        else if (frame == 1)
-        {
-            /* The first resize may replace the borrowed command buffer, creating one new scoped
-             * depth target. Later extent changes must recreate that target under its stable ID. */
-            AT(fixture->runtime->semantic_state->count <= semantic_object_count + 1);
-            AT(fixture->runtime->vklite_state->count <= vklite_object_count + 1);
-            semantic_object_count = fixture->runtime->semantic_state->count;
-            vklite_object_count = fixture->runtime->vklite_state->count;
-        }
         else
         {
             AT(fixture->runtime->semantic_state->count == semantic_object_count);

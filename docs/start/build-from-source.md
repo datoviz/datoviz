@@ -13,7 +13,7 @@ The shortest route is: install the platform prerequisites below, clone with subm
 | GCC 12+, Clang 15+, Apple Clang, or Visual Studio 2022 | Compiles native code. |
 | Ninja | Recommended build backend. |
 | `just` | Runs the project build commands used by the documentation. |
-| Python 3.10+ and NumPy | Runs Python examples, binding tools, and documentation tools. |
+| Python 3.10+, NumPy, and PyYAML | Runs build-time profile checks, Python examples, binding tools, and documentation tools. |
 | Vulkan-capable GPU and runtime | Renders native desktop and offscreen examples. |
 | Shader path | Native scene and test shaders use `glslc`; Canvas has no built-in shader compiler dependency; external GLSL uses the optional runtime shaderc provider; CI and release builds also require `spirv-val`. |
 
@@ -65,13 +65,23 @@ Install and configure a Vulkan driver appropriate for the machine before attempt
 
 ### Native Windows
 
-A published native wheel is the primary Python release path. Source builds are for native development and C/C++ integration. Use Visual Studio 2022, the Vulkan SDK, CMake, Ninja, and vcpkg:
+A published native wheel is the primary Python release path. For source development, install Visual Studio 2022 with **Desktop development with C++**, the LunarG Vulkan SDK, CMake, Ninja, `just`, Python, Git for Windows, and vcpkg. Put CMake, Ninja, `just`, Git Bash, and the SDK's `glslc` on `PATH`.
 
-1. Install Visual Studio with the **Desktop development with C++** workload.
-2. Install the LunarG Vulkan SDK and put `glslc` and `glslangValidator` on `PATH`.
-3. Install CMake, Ninja, and vcpkg.
-4. Open the Datoviz folder in Visual Studio.
-5. Select the `msvc` CMake preset and build.
+The default Windows route uses MSVC x64 and Ninja in `build`. `just build` initializes the Visual Studio developer environment when needed and uses the Python interpreter selected by `python`. It finds vcpkg through `VCPKG_ROOT` or the selected Visual Studio installation's bundled vcpkg. Set `VCPKG_ROOT` if you use a separate checkout.
+
+After cloning, prepare the Python environment in PowerShell:
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install numpy PyYAML
+just build
+just test planning
+```
+
+Use `just build Release` for an optimized build. The helper copies runtime DLLs beside the library, tests, and examples. An existing `build` directory configured with another compiler, generator, or source checkout is rejected; preserve its artifacts and move it aside before configuring the new route. The helper never deletes it.
+
+For extra CMake options, set `DVZ_CMAKE_ARGS`. Use forward slashes in Windows paths and quote values containing spaces. The default `msvc-ninja` preset disables CUDA; enable it explicitly only when working on that optional integration. The separate `msvc` preset keeps the Visual Studio generator in `build-msvc`; its consumers need configuration-specific paths. `just mingw` uses a separate `build-mingw` tree and remains an unvalidated optional route.
 
 For a Linux development environment instead, install WSL2:
 
@@ -96,8 +106,6 @@ On macOS, Linux, and Windows, run the normal repository build:
 ```sh
 just build
 ```
-
-If the first build stops after generating assets, run `just build` once more.
 
 ### Initial FreeBSD build
 
@@ -174,9 +182,29 @@ just example-c start/scatter
 ./build/examples/c/start/scatter --live
 ```
 
+In PowerShell, run the Windows executable as `.\build\examples\c\start\scatter.exe --live`. The Python binding finds the default source library in `build/src`; the Windows build stages its dependency DLLs there.
+
 You should see colored points that pan and zoom. If the process cannot create a Vulkan instance or window, use [platform diagnostics](../how-to/diagnose-platform.md) before changing the example.
 
 Continue with the complete [Quickstart](quickstart.md) or [First C Program](first-c-program.md).
+
+## Check production stack usage
+
+For GCC builds, enable `DVZ_STACK_USAGE` in a fresh build directory, build all targets plus the atlas generator, and check the compiler reports:
+
+```sh
+cmake -S . -B build-stack -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DPython3_EXECUTABLE="$(command -v python3)" \
+  -DDVZ_ENABLE_CUDA=OFF \
+  -DDVZ_STACK_USAGE=ON
+cmake --build build-stack --parallel
+cmake --build build-stack --target datoviz_text_atlas_generate
+python tools/check_stack_usage.py --compile-commands build-stack/compile_commands.json --check
+```
+
+Repeat with `CMAKE_BUILD_TYPE=Release` in another fresh directory. The checker reports missing or stale evidence, uncompiled production sources, unbounded frames, and frames above 16 KiB. Its JSON output retains every frame from the analyzed compilation units. Per-function measurements do not establish total call-stack depth or coverage of disabled platform paths; the bounded worker regression and native Windows runs provide separate evidence. With MSVC, `DVZ_STACK_USAGE` enables `/analyze` and warning C6262 at the same threshold.
 
 ## Dependency policy and troubleshooting context
 

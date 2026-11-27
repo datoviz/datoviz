@@ -52,6 +52,22 @@ class RunCExamplesTests(unittest.TestCase):
         self.assertIn("advanced_qt_hosting", message)
         self.assertIn("non-runnable entries", message)
 
+    def test_windows_manifest_selection_resolves_exe_suffix(self):
+        manifest = {"examples": [{"id": "features_ok", "source": "examples/c/features/ok.c"}]}
+        args = argparse.Namespace(start_at="", code=False, strict=True)
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            examples_root = root / "build/examples/c"
+            executable = examples_root / "features/ok.exe"
+            executable.parent.mkdir(parents=True)
+            executable.touch()
+            executable.chmod(0o755)
+            with mock.patch.object(runner.platform, "system", return_value="Windows"):
+                examples, _, missing = runner.manifest_id_examples(
+                    root, examples_root, manifest, ["features_ok"], args, [])
+            self.assertEqual(examples, [("features/ok", executable)])
+            self.assertEqual(missing, [])
+
     def test_main_runs_entire_selection_and_fails_if_any_child_fails(self):
         args = argparse.Namespace(
             all_built=False,

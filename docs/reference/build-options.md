@@ -43,6 +43,7 @@ inconsistent combinations instead of silently building a partial API.
 | `DVZ_GLSLC_EXECUTABLE` | empty | Use this explicit `glslc` executable instead of automatic discovery. |
 | `DVZ_GLSLC_AUTO_DISCOVERY` | `ON` | Search the active Vulkan SDK and `PATH` for `glslc` when no explicit compiler is configured. Disable for hermetic configurations. |
 | `DVZ_ENABLE_ASAN_IN_DEBUG` | `OFF` | Enable sanitizer instrumentation in Debug builds. |
+| `DVZ_STACK_USAGE` | `OFF` | Emit GCC stack reports and size warnings, or enable MSVC stack analysis at 16 KiB. Run the production report checker and bounded worker tests as well. |
 | `DVZ_ENABLE_COVERAGE` | `OFF` | Enable code coverage instrumentation for supported compilers. |
 | `DVZ_ENABLE_GPROF` | `OFF` | Enable gprof instrumentation on supported compilers. |
 | `DVZ_SANITIZER` | empty | Optional sanitizer override for Debug builds: `asan`, `msan`, `tsan`, or `off`. |
